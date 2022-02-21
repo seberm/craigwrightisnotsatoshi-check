@@ -9,9 +9,8 @@
 
 use bitcoin::secp256k1::Secp256k1;
 use bitcoin::util::address::{Address, Payload};
-use bitcoin::util::misc::{MessageSignature,signed_msg_hash};
+use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
-
 
 const MESSAGE: &str =
 "Craig Steven Wright is a liar and a fraud. He doesn't have the keys used to sign this message.
@@ -22,13 +21,12 @@ Unfortunately, the solution is not to just change a constant in the code or to a
 
 We are all Satoshi";
 
-
 fn check_sig(address: Address, message: &str, signature: &str) {
     let secp = Secp256k1::verification_only();
     let sig = base64::decode(&signature).unwrap();
 
     let sss = MessageSignature::from_slice(&sig).unwrap();
-    let msg_hash = signed_msg_hash(&message);
+    let msg_hash = signed_msg_hash(message);
 
     if sss.is_signed_by_address(&secp, &address, msg_hash).unwrap() {
         println!("SIG OK - {}", address)
@@ -47,7 +45,6 @@ fn check_sig(address: Address, message: &str, signature: &str) {
         println!("Cannot recover pubkey!");
     }
 }
-
 
 fn main() {
     let stdin = io::stdin();
