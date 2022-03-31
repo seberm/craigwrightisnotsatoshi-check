@@ -67,7 +67,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn my_test () {
+    fn check_valid_signatures () {
         let checks: Vec<(&str, &str)> = vec![
             ("1FbPLPR1XoufBQRPGd9JBLPbKLaGjbax5m", "G3SsgKMKAOiOaMzKSGqpKo5MFpt0biP9MbO5UkSl7VxRKcv6Uz+3mHsuEJn58lZlRksvazOKAtuMUMolg/hE9WI="),
             ("19PYG68GkQ9nY99QeUSyUFy6vWxSyPmXA8", "HFjd/SzCNDyXRY/skSjEKusK/adVtBf0ldT1ayvPb+WsLa5Qr0A4seEXjOmtg9K/wcJnv/E3F5TezZNB/ULoZI8="),
@@ -81,7 +81,17 @@ mod tests {
         for (address, signature) in checks.iter() {
             check_sig(address.parse().unwrap(), MESSAGE, signature);
         }
+    }
 
-        assert_eq!(10, 10);
+    #[test]
+    fn check_invalid_signatures () {
+        let checks: Vec<(&str, &str)> = vec![
+            ("19PYG68GkQ9nY99QeUSyUFy6vWxSyPmXA8", "G3SsgKMKAOiOaMzKSGqpKo5MFpt0biP9MbO5UkSl7VxRKcv6Uz+3mHsuEJn58lZlRksvazOKAtuMUMolg/hE9WI="),
+            ("1FbPLPR1XoufBQRPGd9JBLPbKLaGjbax5m", "HFjd/SzCNDyXRY/skSjEKusK/adVtBf0ldT1ayvPb+WsLa5Qr0A4seEXjOmtg9K/wcJnv/E3F5TezZNB/ULoZI8="),
+        ];
+
+        for (address, signature) in checks.iter() {
+            assert!(check_sig(address.parse().unwrap(), MESSAGE, signature).is_err());
+        }
     }
 }
