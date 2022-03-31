@@ -61,3 +61,27 @@ fn main() {
         check_sig(addr.parse().unwrap(), MESSAGE, sig);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn my_test () {
+        let checks: Vec<(&str, &str)> = vec![
+            ("1FbPLPR1XoufBQRPGd9JBLPbKLaGjbax5m", "G3SsgKMKAOiOaMzKSGqpKo5MFpt0biP9MbO5UkSl7VxRKcv6Uz+3mHsuEJn58lZlRksvazOKAtuMUMolg/hE9WI="),
+            ("19PYG68GkQ9nY99QeUSyUFy6vWxSyPmXA8", "HFjd/SzCNDyXRY/skSjEKusK/adVtBf0ldT1ayvPb+WsLa5Qr0A4seEXjOmtg9K/wcJnv/E3F5TezZNB/ULoZI8="),
+            ("12cFuwo1i3FMhkmJoCN8D4SjeCeRsXf96q", "GySQXGlZ+Meq3braDzg3lq7GStteOg+0A9Q5gGKzCcOmET5vnULXo0vsb6anu1wLSL1BnaD0p71U9i+c41Fq48w="),
+            ("1NWRrbPwHhpp28eQeman5YRV84D2aYe1Yw", "HDE35UqJUUa8tkjt3NThu+SwF8arV27Lwg6idBTN7lm+epmjdQlvnWvCqUHrOBPCPQ50aK5VhLnUUFIEDE4KXlo="),
+            ("1MN82eH1Eu3hznewHFkfsAajknhj78Uup5", "HAZ+ot0bWlK4t40kTqC9H0tCjVeCa3WCR0xyYNMX94uqAAXTOHITT8X0QzQI4UFlHCzPhfcxsgMgniiTY0FkUHc="),
+            ("1DYHUEjrVE5gyKAn7P13wuRhs6x9EeijBX", "G08ZpNNnXNawyvIEpa79QpP4+MjZhBd1+0/nAGCcI5X2DgtqfJDyYVpkVg9VXXy9rG7B/NK8TmdO4ep62QLkvlw="),
+            ("1KnT26DTvstGKW7P6BxMBEz8QbKa1iix9C", "HF4BP/4DlRRJ38MlS0zcI9MDNWAfDZo3apmD+wzPPMfdAfuzt0ae0OOrUNW6ye+6mPYSwmnOaUfhR2EqyivCpX4="),
+        ];
+
+        for (address, signature) in checks.iter() {
+            check_sig(address.parse().unwrap(), MESSAGE, signature);
+        }
+
+        assert_eq!(10, 10);
+    }
+}
