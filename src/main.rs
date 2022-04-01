@@ -12,6 +12,13 @@ use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
 
+
+#[derive(Debug)]
+pub enum MyError {
+    PubkeyRecoveryError,
+}
+
+
 const MESSAGE: &str =
 "Craig Steven Wright is a liar and a fraud. He doesn't have the keys used to sign this message.
 
@@ -21,7 +28,8 @@ Unfortunately, the solution is not to just change a constant in the code or to a
 
 We are all Satoshi";
 
-fn check_sig(address: Address, message: &str, signature: &str) {
+
+fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyError> {
     let secp = Secp256k1::verification_only();
     let sig = base64::decode(&signature).unwrap();
 
@@ -42,8 +50,10 @@ fn check_sig(address: Address, message: &str, signature: &str) {
     };
 
     if address != restored_address {
-        println!("Cannot recover pubkey!");
+        return Err(MyError::PubkeyRecoveryError)
     }
+
+    Ok(())
 }
 
 fn main() {
@@ -58,7 +68,12 @@ fn main() {
         let (addr, sig) = (chunks[0], chunks[1]);
 
         println!("addr={}, sig={}", addr, sig);
-        check_sig(addr.parse().unwrap(), MESSAGE, sig);
+        match check_sig(addr.parse().unwrap(), MESSAGE, sig) {
+            Ok(_) => {},
+            Err(MyError::PubkeyRecoveryError) => {
+                println!("Cannot recover pubkey!");
+            },
+        };
     }
 }
 
@@ -79,7 +94,7 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            check_sig(address.parse().unwrap(), MESSAGE, signature);
+            check_sig(address.parse().unwrap(), MESSAGE, signature).unwrap();
         }
     }
 
