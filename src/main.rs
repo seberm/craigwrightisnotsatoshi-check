@@ -35,7 +35,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyE
     let msg_hash = signed_msg_hash(message);
 
     if sss.is_signed_by_address(&secp, &address, msg_hash).unwrap() {
-        println!("SIG OK - {}", address)
+        eprintln!("SIG OK - {}", address)
     }
 
     // Try to recover pubkey
@@ -61,17 +61,27 @@ fn main() -> Result<(), Box<dyn Error>> {
         let line_inner = line?;
         let chunks: Vec<&str> = line_inner.split_whitespace().collect();
 
-        assert!(chunks.len() == 2);
+        if chunks.len() != 2 {
+            eprintln!("Skipping line with unknown format: {}", line_inner);
+            continue;
+        }
 
         let (addr, sig) = (chunks[0], chunks[1]);
 
-        println!("addr={}, sig={}", addr, sig);
-        match check_sig(addr.parse().unwrap(), MESSAGE, sig) {
+        println!("DEBUG: addr_chunk={}, sig_chunk={}", addr, sig);
+        let address: Address = match addr.parse() {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Cannot parse the first chunk as an address: {:?}", e);
+                continue;
+            },
+        };
+
+        match check_sig(address, MESSAGE, sig) {
             Err(MyError::PubkeyRecoveryError) => {
-                println!("Cannot recover pubkey!");
-                //println!("Caused by: {}", e);
-            }
-            Ok(_) => {}
+                eprintln!("Cannot recover pubkey!");
+            },
+            Ok(_) => {},
         };
     }
 
