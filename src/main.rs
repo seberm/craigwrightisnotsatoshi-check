@@ -12,12 +12,10 @@ use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
 
-
 #[derive(Debug)]
 pub enum MyError {
     PubkeyRecoveryError,
 }
-
 
 const MESSAGE: &str =
 "Craig Steven Wright is a liar and a fraud. He doesn't have the keys used to sign this message.
@@ -27,7 +25,6 @@ The Lightning Network is a significant achievement. However, we need to continue
 Unfortunately, the solution is not to just change a constant in the code or to allow powerful participants to force out others.
 
 We are all Satoshi";
-
 
 fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyError> {
     let secp = Secp256k1::verification_only();
@@ -50,7 +47,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyE
     };
 
     if address != restored_address {
-        return Err(MyError::PubkeyRecoveryError)
+        return Err(MyError::PubkeyRecoveryError);
     }
 
     Ok(())
@@ -69,10 +66,10 @@ fn main() {
 
         println!("addr={}, sig={}", addr, sig);
         match check_sig(addr.parse().unwrap(), MESSAGE, sig) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(MyError::PubkeyRecoveryError) => {
                 println!("Cannot recover pubkey!");
-            },
+            }
         };
     }
 }
@@ -82,7 +79,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn check_valid_signatures () {
+    fn check_valid_signatures() {
         let checks: Vec<(&str, &str)> = vec![
             ("1FbPLPR1XoufBQRPGd9JBLPbKLaGjbax5m", "G3SsgKMKAOiOaMzKSGqpKo5MFpt0biP9MbO5UkSl7VxRKcv6Uz+3mHsuEJn58lZlRksvazOKAtuMUMolg/hE9WI="),
             ("19PYG68GkQ9nY99QeUSyUFy6vWxSyPmXA8", "HFjd/SzCNDyXRY/skSjEKusK/adVtBf0ldT1ayvPb+WsLa5Qr0A4seEXjOmtg9K/wcJnv/E3F5TezZNB/ULoZI8="),
@@ -99,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn check_invalid_signatures () {
+    fn check_invalid_signatures() {
         let checks: Vec<(&str, &str)> = vec![
             ("19PYG68GkQ9nY99QeUSyUFy6vWxSyPmXA8", "G3SsgKMKAOiOaMzKSGqpKo5MFpt0biP9MbO5UkSl7VxRKcv6Uz+3mHsuEJn58lZlRksvazOKAtuMUMolg/hE9WI="),
             ("1FbPLPR1XoufBQRPGd9JBLPbKLaGjbax5m", "HFjd/SzCNDyXRY/skSjEKusK/adVtBf0ldT1ayvPb+WsLa5Qr0A4seEXjOmtg9K/wcJnv/E3F5TezZNB/ULoZI8="),
