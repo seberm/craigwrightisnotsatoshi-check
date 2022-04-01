@@ -11,6 +11,7 @@ use bitcoin::secp256k1::Secp256k1;
 use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
+use std::error::Error;
 
 #[derive(Debug)]
 pub enum MyError {
@@ -53,11 +54,11 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyE
     Ok(())
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>>{
     let stdin = io::stdin();
 
     for line in stdin.lock().lines() {
-        let line_inner = line.unwrap();
+        let line_inner = line?;
         let chunks: Vec<&str> = line_inner.split_whitespace().collect();
 
         assert!(chunks.len() == 2);
@@ -72,6 +73,8 @@ fn main() {
             }
         };
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
