@@ -54,7 +54,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyE
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn Error>>{
+fn main() -> Result<(), Box<dyn Error>> {
     let stdin = io::stdin();
 
     for line in stdin.lock().lines() {
@@ -67,10 +67,11 @@ fn main() -> Result<(), Box<dyn Error>>{
 
         println!("addr={}, sig={}", addr, sig);
         match check_sig(addr.parse().unwrap(), MESSAGE, sig) {
-            Ok(_) => {}
             Err(MyError::PubkeyRecoveryError) => {
                 println!("Cannot recover pubkey!");
+                //println!("Caused by: {}", e);
             }
+            Ok(_) => {}
         };
     }
 
