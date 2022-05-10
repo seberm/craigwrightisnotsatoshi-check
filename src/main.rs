@@ -16,12 +16,19 @@ use std::error::Error;
 #[derive(Debug)]
 pub enum MyError {
     PubkeyRecoveryError,
-    SignatureDecodeError,
+    SignatureBase64DecodeError,
+    GeneralSignatureProblem,
 }
 
 impl From<base64::DecodeError> for MyError {
-    fn from(error: base64::DecodeError) -> Self {
-        MyError::SignatureDecodeError
+    fn from(_error: base64::DecodeError) -> Self {
+        MyError::SignatureBase64DecodeError
+    }
+}
+
+impl From<bitcoin::util::misc::MessageSignatureError> for MyError {
+    fn from(_error: bitcoin::util::misc::MessageSignatureError) -> Self {
+        MyError::GeneralSignatureProblem
     }
 }
 
@@ -39,7 +46,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyE
     let secp = Secp256k1::verification_only();
     let sig = base64::decode(&signature)?;
 
-    let sss = MessageSignature::from_slice(&sig).unwrap();
+    let sss = MessageSignature::from_slice(&sig)?;
     let msg_hash = signed_msg_hash(message);
 
     if sss.is_signed_by_address(&secp, &address, msg_hash).unwrap() {
@@ -80,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let address: Address = match addr.parse() {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("Cannot parse the first chunk as an address: {:?}", e);
+                eprintln!("Cannot parse the first chunk as an address: {:?}. Address is probably in a bad format.", e);
                 continue;
             },
         };
@@ -89,8 +96,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             Err(MyError::PubkeyRecoveryError) => {
                 eprintln!("Cannot recover pubkey!");
             },
-            Err(MyError::SignatureDecodeError) => {
-                eprintln!("Cannot decode the signature!");
+            Err(MyError::SignatureBase64DecodeError) => {
+                eprintln!("Cannot decode the signature from base64!");
+            },
+            Err(MyError::GeneralSignatureProblem) => {
+                eprintln!("Cannot dedoce signature data! Invalid format?");
             },
             Ok(_) => {},
         };
