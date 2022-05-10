@@ -16,6 +16,7 @@ use std::error::Error;
 #[derive(Debug)]
 pub enum MyError {
     PubkeyRecoveryError,
+    SignatureDecodeError,
 }
 
 const MESSAGE: &str =
@@ -29,7 +30,10 @@ We are all Satoshi";
 
 fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyError> {
     let secp = Secp256k1::verification_only();
-    let sig = base64::decode(&signature).unwrap();
+    let sig = match base64::decode(&signature) {
+        Ok(s) => s,
+        Err(_) => return Err(MyError::SignatureDecodeError),
+    };
 
     let sss = MessageSignature::from_slice(&sig).unwrap();
     let msg_hash = signed_msg_hash(message);
@@ -80,6 +84,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         match check_sig(address, MESSAGE, sig) {
             Err(MyError::PubkeyRecoveryError) => {
                 eprintln!("Cannot recover pubkey!");
+            },
+            Err(MyError::SignatureDecodeError) => {
+                eprintln!("Cannot decode the signature!");
             },
             Ok(_) => {},
         };
