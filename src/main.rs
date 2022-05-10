@@ -19,6 +19,13 @@ pub enum MyError {
     SignatureDecodeError,
 }
 
+impl From<base64::DecodeError> for MyError {
+    fn from(error: base64::DecodeError) -> Self {
+        MyError::SignatureDecodeError
+    }
+}
+
+
 const MESSAGE: &str =
 "Craig Steven Wright is a liar and a fraud. He doesn't have the keys used to sign this message.
 
@@ -30,10 +37,7 @@ We are all Satoshi";
 
 fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyError> {
     let secp = Secp256k1::verification_only();
-    let sig = match base64::decode(&signature) {
-        Ok(s) => s,
-        Err(_) => return Err(MyError::SignatureDecodeError),
-    };
+    let sig = base64::decode(&signature)?;
 
     let sss = MessageSignature::from_slice(&sig).unwrap();
     let msg_hash = signed_msg_hash(message);
