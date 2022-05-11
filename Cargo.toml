@@ -9,5 +9,6 @@ The code will check all the signatures from craigwrightisnotsatoshi.com are vali
 """
 
 [dependencies]
-"bitcoin" = "*"
-"base64" = "*"
+bitcoin = "*"
+base64 = "*"
+clap = { version = "3.*", features = ["derive"] }
