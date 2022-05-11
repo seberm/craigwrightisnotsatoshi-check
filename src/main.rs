@@ -6,10 +6,8 @@
 // Refs.:
 // - [0] https://craigwrightisnotsatoshi.com/
 // - [1] https://en.bitcoin.it/wiki/BIP_0137
-//
 
 use bitcoin::secp256k1::Secp256k1;
-//use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::address::Address;
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
@@ -17,7 +15,6 @@ use std::error::Error;
 
 #[derive(Debug)]
 pub enum MyError {
-    //PubkeyRecoveryError,
     SignatureBase64DecodeError,
     GeneralSignatureProblem,
 }
@@ -64,11 +61,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
         },
     }
 
-    //if sss.is_signed_by_address(&secp, &address, msg_hash).unwrap() {
-    //    eprintln!("SIG OK - {}", address)
-    //}
-
-    // Try to recover pubkey
+    // Pubkey recovery
     //let pubkey = sss.recover_pubkey(&secp, msg_hash).unwrap();
 
     //let restored_address = match address.payload {
@@ -76,11 +69,10 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
     //    Payload::WitnessProgram { .. } => Address::p2wpkh(&pubkey, address.network).unwrap(),
     //    Payload::ScriptHash(_) => Address::p2shwpkh(&pubkey, address.network).unwrap(),
     //};
-
+    //
     //if address != restored_address {
     //    return Err(MyError::PubkeyRecoveryError);
     //}
-    //Ok(false);
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -107,9 +99,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
 
         match check_sig(address, MESSAGE, sig) {
-        //    Err(MyError::PubkeyRecoveryError) => {
-        //        eprintln!("Cannot recover pubkey!");
-        //    },
             Err(MyError::SignatureBase64DecodeError) => {
                 eprintln!("Cannot decode the signature from base64!");
             },
