@@ -6,16 +6,18 @@
 // Refs.:
 // - [0] https://craigwrightisnotsatoshi.com/
 // - [1] https://en.bitcoin.it/wiki/BIP_0137
+//
 
 use bitcoin::secp256k1::Secp256k1;
-use bitcoin::util::address::{Address, Payload};
+//use bitcoin::util::address::{Address, Payload};
+use bitcoin::util::address::Address;
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
 use std::error::Error;
 
 #[derive(Debug)]
 pub enum MyError {
-    PubkeyRecoveryError,
+    //PubkeyRecoveryError,
     SignatureBase64DecodeError,
     GeneralSignatureProblem,
 }
@@ -42,31 +44,43 @@ Unfortunately, the solution is not to just change a constant in the code or to a
 
 We are all Satoshi";
 
-fn check_sig(address: Address, message: &str, signature: &str) -> Result<(), MyError> {
+fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, MyError> {
     let secp = Secp256k1::verification_only();
     let sig = base64::decode(&signature)?;
 
     let sss = MessageSignature::from_slice(&sig)?;
     let msg_hash = signed_msg_hash(message);
 
-    if sss.is_signed_by_address(&secp, &address, msg_hash).unwrap() {
-        eprintln!("SIG OK - {}", address)
+    match sss.is_signed_by_address(&secp, &address, msg_hash) {
+        Ok(false) => {
+            return Ok(false);
+        },
+        Ok(true) => {
+            return Ok(true);
+        },
+        Err(e) => {
+            eprintln!("Err: {}", e);
+            return Err(MyError::GeneralSignatureProblem);
+        },
     }
+
+    //if sss.is_signed_by_address(&secp, &address, msg_hash).unwrap() {
+    //    eprintln!("SIG OK - {}", address)
+    //}
 
     // Try to recover pubkey
-    let pubkey = sss.recover_pubkey(&secp, msg_hash).unwrap();
+    //let pubkey = sss.recover_pubkey(&secp, msg_hash).unwrap();
 
-    let restored_address = match address.payload {
-        Payload::PubkeyHash(_) => Address::p2pkh(&pubkey, address.network),
-        Payload::WitnessProgram { .. } => Address::p2wpkh(&pubkey, address.network).unwrap(),
-        Payload::ScriptHash(_) => Address::p2shwpkh(&pubkey, address.network).unwrap(),
-    };
+    //let restored_address = match address.payload {
+    //    Payload::PubkeyHash(_) => Address::p2pkh(&pubkey, address.network),
+    //    Payload::WitnessProgram { .. } => Address::p2wpkh(&pubkey, address.network).unwrap(),
+    //    Payload::ScriptHash(_) => Address::p2shwpkh(&pubkey, address.network).unwrap(),
+    //};
 
-    if address != restored_address {
-        return Err(MyError::PubkeyRecoveryError);
-    }
-
-    Ok(())
+    //if address != restored_address {
+    //    return Err(MyError::PubkeyRecoveryError);
+    //}
+    //Ok(false);
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -93,16 +107,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
 
         match check_sig(address, MESSAGE, sig) {
-            Err(MyError::PubkeyRecoveryError) => {
-                eprintln!("Cannot recover pubkey!");
-            },
+        //    Err(MyError::PubkeyRecoveryError) => {
+        //        eprintln!("Cannot recover pubkey!");
+        //    },
             Err(MyError::SignatureBase64DecodeError) => {
                 eprintln!("Cannot decode the signature from base64!");
             },
             Err(MyError::GeneralSignatureProblem) => {
-                eprintln!("Cannot dedoce signature data! Invalid format?");
+                eprintln!("Cannot decode signature data! Invalid format?");
             },
-            Ok(_) => {},
+            Ok(false) => {
+                eprintln!("BAD - {}", addr);
+            },
+            Ok(true) => {
+                eprintln!("OK - {}", addr);
+            }
         };
     }
 
