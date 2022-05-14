@@ -2,7 +2,13 @@
 name = "craigwrightisnotsatoshi-check"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/seberm/craigwrightisnotsatoshi-check"
+readme = "README.md"
+description = """
+The code will check all the signatures from craigwrightisnotsatoshi.com are valid.
+"""
 
 [dependencies]
-"bitcoin" = "*"
-"base64" = "*"
+bitcoin = "*"
+base64 = "*"
+clap = { version = "3.*", features = ["derive"] }
