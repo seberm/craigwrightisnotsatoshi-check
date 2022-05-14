@@ -7,6 +7,7 @@
 // - [0] https://craigwrightisnotsatoshi.com/
 // - [1] https://en.bitcoin.it/wiki/BIP_0137
 
+use clap::Parser;
 use bitcoin::secp256k1::Secp256k1;
 use bitcoin::util::address::Address;
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
@@ -75,7 +76,15 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
     //}
 }
 
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args { }
+
+
 fn main() -> Result<(), Box<dyn Error>> {
+    let _args = Args::parse();
+
     let stdin = io::stdin();
 
     for line in stdin.lock().lines() {
