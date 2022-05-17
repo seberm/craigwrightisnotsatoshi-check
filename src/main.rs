@@ -160,4 +160,16 @@ mod tests {
             assert_eq!(r.ok(), Some(false));
         }
     }
+
+    #[test]
+    fn check_invalid_addresses() {
+        let checks: Vec<&str> = vec![
+            "19PYG68GkQ9nY99aEJSyUFy6vWxSyPmXAa",
+            "1FbPLPR1XoufBQRaGJ9JBLPbKLaGjbax5c",
+        ];
+
+        for address in checks.iter() {
+            assert!(address.parse::<Address>().is_err());
+        }
+    }
 }
