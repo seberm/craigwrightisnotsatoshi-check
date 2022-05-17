@@ -50,12 +50,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
     let msg_hash = signed_msg_hash(message);
 
     match sss.is_signed_by_address(&secp, &address, msg_hash) {
-        Ok(false) => {
-            return Ok(false);
-        },
-        Ok(true) => {
-            return Ok(true);
-        },
+        Ok(v) => return Ok(v),
         Err(e) => {
             eprintln!("Err: {}", e);
             return Err(MyError::GeneralSignatureProblem);
