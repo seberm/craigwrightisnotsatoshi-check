@@ -13,6 +13,7 @@ use bitcoin::util::address::Address;
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
 use std::io::{self, BufRead};
 use std::error::Error;
+use log::{error, warn};
 
 #[derive(Debug)]
 pub enum MyError {
@@ -52,7 +53,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
     match sss.is_signed_by_address(&secp, &address, msg_hash) {
         Ok(v) => return Ok(v),
         Err(e) => {
-            eprintln!("Err: {}", e);
+            error!("Err: {}", e);
             return Err(MyError::GeneralSignatureProblem);
         },
     }
@@ -82,6 +83,8 @@ struct Args {
 
 
 fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+
     let args = Args::parse();
 
     let stdin = io::stdin();
@@ -91,27 +94,27 @@ fn main() -> Result<(), Box<dyn Error>> {
         let chunks: Vec<&str> = line_inner.split_whitespace().collect();
 
         if chunks.len() != 2 {
-            eprintln!("Skipping line with unknown format: {}", line_inner);
+            warn!("Skipping line with unknown format: {}", line_inner);
             continue;
         }
 
         let (addr, sig) = (chunks[0], chunks[1]);
 
-        println!("DEBUG: addr_chunk={}, sig_chunk={}", addr, sig);
+        //debug!("addr_chunk={}, sig_chunk={}", addr, sig);
         let address: Address = match addr.parse() {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("Cannot parse the first chunk as an address: {:?}. Address is probably in a bad format.", e);
+                error!("Cannot parse the first chunk as an address: {:?}. Address is probably in a bad format.", e);
                 continue;
             },
         };
 
         match check_sig(address, &args.message, sig) {
             Err(MyError::SignatureBase64DecodeError) => {
-                eprintln!("Cannot decode the signature from base64!");
+                error!("Cannot decode the signature from base64!");
             },
             Err(MyError::GeneralSignatureProblem) => {
-                eprintln!("Cannot decode signature data! Invalid format?");
+                error!("Cannot decode signature data! Invalid format?");
             },
             Ok(false) => {
                 eprintln!("BAD - {}", addr);

@@ -16,3 +16,5 @@ license = "GPL-2.0-or-later"
 bitcoin = "*"
 base64 = "*"
 clap = { version = "3.*", features = ["derive"] }
+env_logger = "*"
+log = "*"
