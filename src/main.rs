@@ -74,11 +74,15 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-struct Args { }
+struct Args {
+    /// The message text which is checked against the signatures.
+    #[clap(short, long, default_value = MESSAGE)]
+    message: String,
+}
 
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let _args = Args::parse();
+    let args = Args::parse();
 
     let stdin = io::stdin();
 
@@ -102,7 +106,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
         };
 
-        match check_sig(address, MESSAGE, sig) {
+        match check_sig(address, &args.message, sig) {
             Err(MyError::SignatureBase64DecodeError) => {
                 eprintln!("Cannot decode the signature from base64!");
             },
