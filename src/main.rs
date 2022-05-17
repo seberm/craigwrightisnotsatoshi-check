@@ -155,7 +155,9 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            assert!(check_sig(address.parse().unwrap(), MESSAGE, signature).is_err());
+            let r:Result<bool, MyError> = check_sig(address.parse().unwrap(), MESSAGE, signature);
+            assert!(r.is_ok());
+            assert_eq!(r.ok(), Some(false));
         }
     }
 }
