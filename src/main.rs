@@ -7,13 +7,13 @@
 // - [0] https://craigwrightisnotsatoshi.com/
 // - [1] https://en.bitcoin.it/wiki/BIP_0137
 
-use clap::Parser;
 use bitcoin::secp256k1::Secp256k1;
 use bitcoin::util::address::Address;
 use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
-use std::io::{self, BufRead};
-use std::error::Error;
+use clap::Parser;
 use log::{error, warn};
+use std::error::Error;
+use std::io::{self, BufRead};
 
 #[derive(Debug)]
 pub enum MyError {
@@ -32,7 +32,6 @@ impl From<bitcoin::util::misc::MessageSignatureError> for MyError {
         MyError::GeneralSignatureProblem
     }
 }
-
 
 const MESSAGE: &str =
 "Craig Steven Wright is a liar and a fraud. He doesn't have the keys used to sign this message.
@@ -55,7 +54,7 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
         Err(e) => {
             error!("Err: {}", e);
             return Err(MyError::GeneralSignatureProblem);
-        },
+        }
     }
 
     // Pubkey recovery
@@ -72,7 +71,6 @@ fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, M
     //}
 }
 
-
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
@@ -80,7 +78,6 @@ struct Args {
     #[clap(short, long, default_value = MESSAGE)]
     message: String,
 }
-
 
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
@@ -106,19 +103,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             Err(e) => {
                 error!("Cannot parse the first chunk as an address: {:?}. Address is probably in a bad format.", e);
                 continue;
-            },
+            }
         };
 
         match check_sig(address, &args.message, sig) {
             Err(MyError::SignatureBase64DecodeError) => {
                 error!("Cannot decode the signature from base64!");
-            },
+            }
             Err(MyError::GeneralSignatureProblem) => {
                 error!("Cannot decode signature data! Invalid format?");
-            },
+            }
             Ok(false) => {
                 eprintln!("BAD - {}", addr);
-            },
+            }
             Ok(true) => {
                 eprintln!("OK - {}", addr);
             }
@@ -157,7 +154,7 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            let r:Result<bool, MyError> = check_sig(address.parse().unwrap(), MESSAGE, signature);
+            let r: Result<bool, MyError> = check_sig(address.parse().unwrap(), MESSAGE, signature);
             assert!(r.is_ok());
             assert_eq!(r.ok(), Some(false));
         }
