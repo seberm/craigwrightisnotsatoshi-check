@@ -7,9 +7,10 @@
 // - [0] https://craigwrightisnotsatoshi.com/
 // - [1] https://en.bitcoin.it/wiki/BIP_0137
 
+use bitcoin::address::{NetworkChecked, NetworkUnchecked};
 use bitcoin::secp256k1::Secp256k1;
-use bitcoin::util::address::Address;
-use bitcoin::util::misc::{signed_msg_hash, MessageSignature};
+use bitcoin::sign_message::{signed_msg_hash, MessageSignature};
+use bitcoin::{Address, Network};
 use clap::Parser;
 use log::{error, warn};
 use std::error::Error;
@@ -27,8 +28,8 @@ impl From<base64::DecodeError> for MyError {
     }
 }
 
-impl From<bitcoin::util::misc::MessageSignatureError> for MyError {
-    fn from(_error: bitcoin::util::misc::MessageSignatureError) -> Self {
+impl From<bitcoin::sign_message::MessageSignatureError> for MyError {
+    fn from(_error: bitcoin::sign_message::MessageSignatureError) -> Self {
         MyError::GeneralSignatureProblem
     }
 }
@@ -42,11 +43,15 @@ Unfortunately, the solution is not to just change a constant in the code or to a
 
 We are all Satoshi";
 
-fn check_sig(address: Address, message: &str, signature: &str) -> Result<bool, MyError> {
+fn check_sig(
+    address: Address<NetworkChecked>,
+    message: &str,
+    signature: &str,
+) -> Result<bool, MyError> {
     let secp = Secp256k1::verification_only();
-    let sig = base64::decode(&signature)?;
+    //let sig = base64::decode(&signature)?;
 
-    let sss = MessageSignature::from_slice(&sig)?;
+    let sss = MessageSignature::from_base64(signature)?;
     let msg_hash = signed_msg_hash(message);
 
     match sss.is_signed_by_address(&secp, &address, msg_hash) {
@@ -98,13 +103,25 @@ fn main() -> Result<(), Box<dyn Error>> {
         let (addr, sig) = (chunks[0], chunks[1]);
 
         //debug!("addr_chunk={}, sig_chunk={}", addr, sig);
-        let address: Address = match addr.parse() {
-            Ok(s) => s,
+        let parsed_address: Address<NetworkUnchecked> = match addr.parse::<Address<_>>() {
+            Ok(a) => a,
             Err(e) => {
-                error!("Cannot parse the first chunk as an address: {:?}. Address is probably in a bad format.", e);
+                error!(
+                    "Cannot parse the address: {:?}. Address is probably in a bad format.",
+                    e
+                );
                 continue;
             }
         };
+
+        let address: Address<NetworkChecked> =
+            match parsed_address.require_network(Network::Bitcoin) {
+                Ok(a) => a,
+                Err(e) => {
+                    error!("Invalid network: {:?}", e);
+                    continue;
+                }
+            };
 
         match check_sig(address, &args.message, sig) {
             Err(MyError::SignatureBase64DecodeError) => {
@@ -114,10 +131,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 error!("Cannot decode signature data! Invalid format?");
             }
             Ok(false) => {
-                eprintln!("BAD - {}", addr);
+                println!("BAD - {}", addr);
             }
             Ok(true) => {
-                eprintln!("OK - {}", addr);
+                println!("OK - {}", addr);
             }
         };
     }
@@ -142,7 +159,16 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            check_sig(address.parse().unwrap(), MESSAGE, signature).unwrap();
+            assert!(check_sig(
+                address
+                    .parse::<Address<_>>()
+                    .unwrap()
+                    .require_network(Network::Bitcoin)
+                    .unwrap(),
+                MESSAGE,
+                signature
+            )
+            .is_ok());
         }
     }
 
@@ -154,7 +180,15 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            let r: Result<bool, MyError> = check_sig(address.parse().unwrap(), MESSAGE, signature);
+            let r: Result<bool, MyError> = check_sig(
+                address
+                    .parse::<Address<_>>()
+                    .unwrap()
+                    .require_network(Network::Bitcoin)
+                    .unwrap(),
+                MESSAGE,
+                signature,
+            );
             assert!(r.is_ok());
             assert_eq!(r.ok(), Some(false));
         }
@@ -168,7 +202,7 @@ mod tests {
         ];
 
         for address in checks.iter() {
-            assert!(address.parse::<Address>().is_err());
+            assert!(address.parse::<Address<_>>().is_err());
         }
     }
 }

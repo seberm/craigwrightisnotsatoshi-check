@@ -13,7 +13,7 @@ The code will check all the signatures from craigwrightisnotsatoshi.com are vali
 license = "GPL-2.0-or-later"
 
 [dependencies]
-bitcoin = "*"
+bitcoin = { version = "*", features = ["base64"] }
 base64 = "*"
 clap = { version = "3.*", features = ["derive"] }
 env_logger = "*"
