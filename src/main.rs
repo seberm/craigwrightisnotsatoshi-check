@@ -51,7 +51,7 @@ fn check_sig(
     let secp = Secp256k1::verification_only();
     //let sig = base64::decode(&signature)?;
 
-    let sss = MessageSignature::from_base64(&signature)?;
+    let sss = MessageSignature::from_base64(signature)?;
     let msg_hash = signed_msg_hash(message);
 
     match sss.is_signed_by_address(&secp, &address, msg_hash) {
