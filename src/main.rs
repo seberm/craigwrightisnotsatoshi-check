@@ -7,10 +7,10 @@
 // - [0] https://craigwrightisnotsatoshi.com/
 // - [1] https://en.bitcoin.it/wiki/BIP_0137
 
-use bitcoin::secp256k1::Secp256k1;
 use bitcoin::address::{NetworkChecked, NetworkUnchecked};
-use bitcoin::{Address, Network};
+use bitcoin::secp256k1::Secp256k1;
 use bitcoin::sign_message::{signed_msg_hash, MessageSignature};
+use bitcoin::{Address, Network};
 use clap::Parser;
 use log::{error, warn};
 use std::error::Error;
@@ -43,7 +43,11 @@ Unfortunately, the solution is not to just change a constant in the code or to a
 
 We are all Satoshi";
 
-fn check_sig(address: Address<NetworkChecked>, message: &str, signature: &str) -> Result<bool, MyError> {
+fn check_sig(
+    address: Address<NetworkChecked>,
+    message: &str,
+    signature: &str,
+) -> Result<bool, MyError> {
     let secp = Secp256k1::verification_only();
     //let sig = base64::decode(&signature)?;
 
@@ -102,18 +106,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         let parsed_address: Address<NetworkUnchecked> = match addr.parse::<Address<_>>() {
             Ok(a) => a,
             Err(e) => {
-                error!("Cannot parse the address: {:?}. Address is probably in a bad format.", e);
+                error!(
+                    "Cannot parse the address: {:?}. Address is probably in a bad format.",
+                    e
+                );
                 continue;
             }
         };
 
-        let address: Address<NetworkChecked> = match parsed_address.require_network(Network::Bitcoin) {
-            Ok(a) => a,
-            Err(e) => {
-                error!("Invalid network: {:?}", e);
-                continue;
-            }
-        };
+        let address: Address<NetworkChecked> =
+            match parsed_address.require_network(Network::Bitcoin) {
+                Ok(a) => a,
+                Err(e) => {
+                    error!("Invalid network: {:?}", e);
+                    continue;
+                }
+            };
 
         match check_sig(address, &args.message, sig) {
             Err(MyError::SignatureBase64DecodeError) => {
