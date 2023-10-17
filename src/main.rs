@@ -159,7 +159,16 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            check_sig(address.parse().unwrap(), MESSAGE, signature).unwrap();
+            assert!(check_sig(
+                address
+                    .parse::<Address<_>>()
+                    .unwrap()
+                    .require_network(Network::Bitcoin)
+                    .unwrap(),
+                MESSAGE,
+                signature
+            )
+            .is_ok());
         }
     }
 
@@ -171,7 +180,15 @@ mod tests {
         ];
 
         for (address, signature) in checks.iter() {
-            let r: Result<bool, MyError> = check_sig(address.parse().unwrap(), MESSAGE, signature);
+            let r: Result<bool, MyError> = check_sig(
+                address
+                    .parse::<Address<_>>()
+                    .unwrap()
+                    .require_network(Network::Bitcoin)
+                    .unwrap(),
+                MESSAGE,
+                signature,
+            );
             assert!(r.is_ok());
             assert_eq!(r.ok(), Some(false));
         }
@@ -185,7 +202,7 @@ mod tests {
         ];
 
         for address in checks.iter() {
-            assert!(address.parse::<Address>().is_err());
+            assert!(address.parse::<Address<_>>().is_err());
         }
     }
 }
